@@ -291,11 +291,16 @@ func passphrasePromptForEncryption() (string, error) {
 		fmt.Fprintln(os.Stderr, "Using passphrase from environment variable.")
 		return pass, nil
 	}
-	pass, err := readSecret("Enter passphrase (leave empty to autogenerate a secure one):")
-	if err != nil {
-		return "", fmt.Errorf("could not read passphrase: %v", err)
+	p := ""
+	if _, exists := os.LookupEnv("AGE_AUTOGENERATE_PASSPHRASE"); exists {
+		fmt.Fprintln(os.Stderr, "Skipping request for the user to enter a passphrase.")
+	} else {
+		pass, err := readSecret("Enter passphrase (leave empty to autogenerate a secure one):")
+		if err != nil {
+			return "", fmt.Errorf("could not read passphrase: %v", err)
+		}
+		p = string(pass)
 	}
-	p := string(pass)
 	if p == "" {
 		var words []string
 		for i := 0; i < 10; i++ {
